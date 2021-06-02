@@ -1,0 +1,18 @@
+on: [pull_request]
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-latest
+    name: A job to set the PR label based on the branch name
+    steps:
+      - name: Checkout local
+        uses: actions/checkout@v2
+        with:
+          path: "github-labeller-action"
+      - name: Action step
+        uses: ./
+        with:
+          branch: ${{ env.GITHUB_REF }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repo: ${{ env.GITHUB_REPOSITORY }}
+          issue_number: ${{ github.event.number }}
