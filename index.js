@@ -1,8 +1,8 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
+const core = require("@actions/core");
+const github = require("@actions/github");
 
 function parseLabel(fullBranchRef) {
-  const branch = fullBranchRef.replace('refs/heads/', '');
+  const branch = fullBranchRef.replace("refs/heads/", "");
   const parts = branch.split("/", 2);
   if (parts.length > 1) {
     return parts[0];
@@ -10,13 +10,31 @@ function parseLabel(fullBranchRef) {
   return "";
 }
 
-async function run(octokit, label, repository, issue_number) {
+async function run() {
   try {
-    const [owner, repo] = repository.split("/", 2);
+    const {
+      number: issue_number,
+      head: {
+        ref,
+        repo: {
+          name: repo,
+          owner: { login: owner },
+        },
+      },
+    } = github.context.payload.pull_request;
+
+    const label = parseLabel(ref);
+    if (!label) {
+      console.log(`no label found in branch name: ${ref}`);
+      return;
+    }
+
+    const token = core.getInput("token");
+    const octokit = github.getOctokit(token);
 
     const { data: labels } = await octokit.rest.issues.listLabelsForRepo({
       owner,
-      repo
+      repo,
     });
 
     for (let i = 0; i < labels.length; i++) {
@@ -25,27 +43,16 @@ async function run(octokit, label, repository, issue_number) {
           owner,
           repo,
           issue_number,
-          labels: [label]
+          labels: [label],
         });
         core.setOutput("label", label);
-        break;
+        return;
       }
     }
+    console.log(`no labels in repo matched label: ${label}`);
   } catch (error) {
     core.setFailed(error.message);
   }
 }
 
-try {
-  const label = parseLabel(process.env.GITHUB_REF);
-
-  const token = core.getInput('token');
-  const octokit = github.getOctokit(token);
-
-  const repo = process.env.GITHUB_REPOSITORY;
-  const issue_number = core.getInput('issue_number');
-
-  run(octokit, label, repo, issue_number);
-} catch (error) {
-  core.setFailed(error.message);
-}
+run();

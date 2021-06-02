@@ -1,0 +1,14 @@
+{
+  "pull_request": {
+    "number": 4,
+    "head": {
+      "ref": "action",
+      "repo": {
+        "name": "github-labeller-action",
+        "owner": {
+          "login": "nbycomp"
+        }
+      }
+    }
+  }
+}

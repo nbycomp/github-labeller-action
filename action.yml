@@ -1,15 +1,12 @@
-name: 'Labeller action'
-description: 'Automatically add  PR label based on branch prefix'
+name: "Labeller action"
+description: "Automatically add PR label based on branch prefix"
 inputs:
   token:
-    description: 'Token'
-    required: true
-  issue_number:
-    description: 'Issue number'
+    description: "Github Token"
     required: true
 outputs:
   label:
-    description: 'The label that was applied'
+    description: "The label that was applied"
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node12"
+  main: "dist/index.js"
