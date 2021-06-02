@@ -12,7 +12,5 @@ jobs:
       - name: Action step
         uses: ./
         with:
-          branch: ${{ env.GITHUB_REF }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          repo: ${{ env.GITHUB_REPOSITORY }}
           issue_number: ${{ github.event.number }}

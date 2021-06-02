@@ -37,14 +37,12 @@ async function run(octokit, label, repository, issue_number) {
 }
 
 try {
-  const fullBranchRef = core.getInput('branch');
-
-  const label = parseLabel(fullBranchRef);
+  const label = parseLabel(process.env.GITHUB_REF);
 
   const token = core.getInput('token');
   const octokit = github.getOctokit(token);
 
-  const repo = core.getInput('repo');
+  const repo = process.env.GITHUB_REPOSITORY;
   const issue_number = core.getInput('issue_number');
 
   run(octokit, label, repo, issue_number);

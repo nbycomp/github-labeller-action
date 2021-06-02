@@ -1,14 +1,8 @@
 name: 'Labeller action'
 description: 'Automatically add  PR label based on branch prefix'
 inputs:
-  branch:
-    description: 'Branch name'
-    required: true
   token:
     description: 'Token'
-    required: true
-  repo:
-    description: 'Repository name'
     required: true
   issue_number:
     description: 'Issue number'
