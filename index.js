@@ -44,7 +44,7 @@ try {
 
   const repo = process.env.GITHUB_REPOSITORY;
   const issue_number = core.getInput('issue_number');
-
+  console.log(label, repo)
   run(octokit, label, repo, issue_number);
 } catch (error) {
   core.setFailed(error.message);

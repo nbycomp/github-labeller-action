@@ -5,12 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to set the PR label based on the branch name
     steps:
-      - name: Checkout local
-        uses: actions/checkout@v2
-        with:
-          path: "github-labeller-action"
       - name: Action step
-        uses: ./
+        uses: 'nbycomp/github-labeller-action@v1'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue_number: ${{ github.event.number }}
+          branch: ${{ github.event.pull_request.head.ref }}
+          repo: ${{ github.event.pull_request.head.repo.name }}
