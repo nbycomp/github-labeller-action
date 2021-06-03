@@ -2,13 +2,14 @@
   "pull_request": {
     "number": 4,
     "head": {
-      "ref": "action",
+      "ref": "feature/dsadsa",
       "repo": {
         "name": "github-labeller-action",
         "owner": {
           "login": "nbycomp"
         }
       }
-    }
+    },
+    "labels": [{ "name": "feature" }, { "name": "ci" }]
   }
 }

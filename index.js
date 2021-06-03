@@ -1,17 +1,26 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
-function parseLabel(fullBranchRef) {
-  const branch = fullBranchRef.replace("refs/heads/", "");
-  const parts = branch.split("/", 2);
-  if (parts.length > 1) {
-    return parts[0];
-  }
-  return "";
-}
-
 async function run() {
   try {
+    const inputLabels = core.getInput("labels");
+    const allowedLabels = inputLabels
+      .split(",")
+      .map((l) => l.trim())
+      .filter((r) => r);
+    const token = core.getInput("token");
+    if (!token) {
+      core.setFailed('Missing input: "token"');
+      return;
+    }
+
+    const octokit = github.getOctokit(token);
+
+    if (allowedLabels.length === 0) {
+      core.setFailed('Missing input: "labels"');
+      return;
+    }
+
     const {
       number: issue_number,
       head: {
@@ -21,35 +30,52 @@ async function run() {
           owner: { login: owner },
         },
       },
+      labels: currentPullLabels,
     } = github.context.payload.pull_request;
 
-    const label = parseLabel(ref);
-    if (!label) {
-      console.log(`no label found in branch name: ${ref}`);
-      return;
-    }
+    const { data: availableRepositoryLabels } =
+      await octokit.rest.issues.listLabelsForRepo({
+        owner,
+        repo,
+      });
 
-    const token = core.getInput("token");
-    const octokit = github.getOctokit(token);
+    const parts = ref.split("/", 2);
+    const labelFromBranch = parts.length > 1 ? parts[0] : null;
 
-    const { data: labels } = await octokit.rest.issues.listLabelsForRepo({
-      owner,
-      repo,
-    });
+    if (labelFromBranch) {
+      console.log(`Label from branch found: ${labelFromBranch}.`);
 
-    for (let i = 0; i < labels.length; i++) {
-      if (label == labels[i].name) {
+      const availableRepoLabels = new Set(
+        availableRepositoryLabels.map((l) => l.name)
+      );
+
+      if (availableRepoLabels.has(labelFromBranch)) {
         await octokit.rest.issues.addLabels({
           owner,
           repo,
           issue_number,
-          labels: [label],
+          labels: [labelFromBranch],
         });
-        core.setOutput("label", label);
-        return;
+        core.setOutput("branch-label", labelFromBranch);
+        console.log(`Applied label to Pull Request: ${labelFromBranch}.`);
+      } else {
+        console.log(`Label not available: ${labelFromBranch}.`);
       }
+    } else {
+      console.log(`No label found in branch name: ${ref}`);
     }
-    console.log(`no labels in repo matched label: ${label}`);
+
+    const appliedLabels = new Set(currentPullLabels.map((l) => l.name));
+    if (labelFromBranch) {
+      appliedLabels.add(labelFromBranch);
+    }
+
+    const labelsInList = [...allowedLabels].filter((label) =>
+      appliedLabels.has(label)
+    );
+    if (!labelsInList.length) {
+      core.setFailed("None of the required labels were found.");
+    }
   } catch (error) {
     core.setFailed(error.message);
   }

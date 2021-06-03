@@ -5,7 +5,12 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to set the PR label based on the branch name
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Action step
-        uses: nbycomp/github-labeller-action@v1
+        uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "feature, bugfix, build, ci, documentation,
+          test, performance, style, uncategorised,
+          internal, refactor"

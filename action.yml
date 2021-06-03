@@ -4,6 +4,9 @@ inputs:
   token:
     description: "Github Token"
     required: true
+  labels:
+    description: "Comma separated list of labels to match"
+    required: true
 outputs:
   label:
     description: "The label that was applied"
