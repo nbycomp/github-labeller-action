@@ -1,6 +1,24 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
+// Conventional-commit and common short prefixes, mapped to the label they mean.
+const PREFIX_ALIASES = {
+  feat: "feature",
+  fix: "bugfix",
+  bug: "bugfix",
+  hotfix: "bugfix",
+  doc: "documentation",
+  docs: "documentation",
+  perf: "performance",
+  tests: "test",
+  chore: "internal",
+};
+
+function labelForPrefix(prefix) {
+  const p = prefix.toLowerCase();
+  return PREFIX_ALIASES[p] || p;
+}
+
 async function run() {
   try {
     const inputLabels = core.getInput("labels");
@@ -40,7 +58,7 @@ async function run() {
       });
 
     const parts = ref.split("/", 2);
-    const labelFromBranch = parts.length > 1 ? parts[0] : null;
+    const labelFromBranch = parts.length > 1 ? labelForPrefix(parts[0]) : null;
 
     if (labelFromBranch) {
       console.log(`Label from branch found: ${labelFromBranch}.`);
@@ -74,7 +92,13 @@ async function run() {
       appliedLabels.has(label)
     );
     if (!labelsInList.length) {
-      core.setFailed("None of the required labels were found.");
+      core.setFailed(
+        `None of the required labels were found. Add one of [${allowedLabels.join(
+          ", "
+        )}] or use it as the branch prefix (aliases: ${Object.keys(
+          PREFIX_ALIASES
+        ).join(", ")}).`
+      );
     }
   } catch (error) {
     core.setFailed(error.message);
